@@ -1,65 +1,26 @@
 //! Wakatime LS
 
+use lsp_server::Connection;
 use std::{
 	env,
 	io::ErrorKind,
-	panic::{self, PanicHookInfo},
 	process::{self, Command},
 };
-use tokio::runtime::Builder;
-use tower_lsp_server::{LspService, Server};
-use tracing_subscriber::{EnvFilter, fmt::format::FmtSpan};
-use wakatime_ls::Backend;
+use wakatime_ls::LanguageServer;
 
-/// Transfers panic messages to the tracing logging pipeline
-fn tracing_panic_hook(panic_info: &PanicHookInfo) {
-	let payload = panic_info
-		.payload()
-		.downcast_ref::<&'static str>()
-		.map_or_else(
-			|| {
-				panic_info
-					.payload()
-					.downcast_ref::<String>()
-					.map_or("Box<dyn Any>", |s| &s[..])
-			},
-			|s| *s,
-		);
+const USAGE: &str = concat!(
+	"usage: ",
+	env!("CARGO_PKG_NAME"),
+	" [--help | --version | --health]"
+);
 
-	let location = panic_info.location().map(ToString::to_string);
-
-	tracing::error!(
-		panic.payload = payload,
-		panic.location = location,
-		"A panic occurred",
-	);
-}
-
-/// Entrypoint when running with no arguments
-async fn ls_main() {
-	let file_appender = tracing_appender::rolling::never("/tmp", "wakatime-ls.log");
-	let (non_blocking, _guard) = tracing_appender::non_blocking(file_appender);
-	tracing_subscriber::fmt()
-		.with_writer(non_blocking)
-		.with_span_events(FmtSpan::NEW)
-		.with_env_filter(EnvFilter::from_default_env())
-		.init();
-
-	let stdin = tokio::io::stdin();
-	let stdout = tokio::io::stdout();
-
-	let (service, socket) = LspService::new(Backend::new);
-	Server::new(stdin, stdout, socket).serve(service).await;
-}
-
-fn main() {
-	panic::set_hook(Box::new(tracing_panic_hook));
-
+fn main() -> Result<(), Box<dyn std::error::Error>> {
 	let mut args = env::args();
 	let _binary = args.next();
 
 	if let Some(arg) = args.next() {
 		match arg.as_str() {
+			"--help" => println!("{USAGE}"),
 			"--version" => println!("{}", env!("CARGO_PKG_VERSION")),
 			"--health" => {
 				// `wakatime-ls` version
@@ -81,16 +42,19 @@ fn main() {
 				// TODO: add a health check for api key
 			}
 			option => {
-				println!("invalid option `{option}` provided");
-				println!("usage: {} [--version | --health]", env!("CARGO_PKG_NAME"));
+				println!("invalid option `{option}` provided\n{USAGE}");
 			}
 		}
 		process::exit(0);
 	}
 
-	// We really don't need much power with what we are doing
-	let rt = Builder::new_current_thread()
-		.build()
-		.expect("config is valid");
-	rt.block_on(ls_main());
+	// Create the transport. Includes the stdio (stdin and stdout) versions but
+	// this could also be implemented to use sockets or HTTP.
+	let (connection, io_threads) = Connection::stdio();
+
+	LanguageServer::new(connection).start()?;
+
+	io_threads.join()?;
+
+	Ok(())
 }
