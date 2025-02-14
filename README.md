@@ -1,4 +1,4 @@
-# Wakatime language server
+# WakaTime Language Server
 
 <p align="center"><strong>
 A dead-simple language server around <code>wakatime-cli</code> to send code tracking heartbeats
@@ -19,7 +19,7 @@ A dead-simple language server around <code>wakatime-cli</code> to send code trac
 
 I made this language server wrapper implementation around `wakatime-cli` because I wanted support for WakaTime in [Helix](https://github.com/helix-editor/helix). That said, it's should be compatible with every LSP implementations.
 
-## Installation
+# Installation
 
 <details>
   <summary>With <code>cargo</code></summary><br />
@@ -37,7 +37,7 @@ I don't plan on publishing pre-v1 versions on `crates.io`.
 <details>
   <summary>With <code>nix</code> flakes</summary><br />
 
-A `flake.nix` is available which means that you can use `github:mrnossiom/wakatime-ls` as a flake identifier. That way you can:
+A `flake.nix` is available which means that you can use `github:mrnossiom/wakatime-ls` as a flake identifier. Package is reachable through `packages.${system}.default` or `packages.${system}.wakatime-ls`. That way you can:
 
 - import this repository in your flake inputs
 
@@ -58,8 +58,6 @@ A `flake.nix` is available which means that you can use `github:mrnossiom/wakati
 
   e.g. `nix profile install github:mrnossiom/wakatime-ls`
 
-Package is reachable through `packages.${system}.default` or `packages.${system}.wakatime-ls`.
-
 </details>
 
 <details>
@@ -71,29 +69,40 @@ You may download the compressed tarball corresponding to your OS.
 
 </details>
 
-For non-nixOS setups, you will also need `wakatime-cli` in path which you can download:
+You will also need `wakatime-cli` in your `$PATH` for setups others than Nix, which already bundles it. You can download `wakatime-cli`:
 
-- with your prefered package manager, see [`wakatime` repology](https://repology.org/project/wakatime/versions) or [`wakatime-cli` repology](https://repology.org/project/wakatime-cli/versions)
-- or from [`wakatime-cli` releases page](https://github.com/wakatime/wakatime-cli/releases/latest)
+- with your prefered package manager, see [`wakatime` repology] or [`wakatime-cli` repology]
+- or from the [`wakatime-cli` releases page]
 
-## Configuration
+[`wakatime` repology]: https://repology.org/project/wakatime/versions
+[`wakatime-cli` repology]: https://repology.org/project/wakatime-cli/versions
+[`wakatime-cli` releases page]: https://github.com/wakatime/wakatime-cli/releases/latest
 
-Currently `wakatime-ls` is not configurable cause it's more of a simple `wakatime-cli` wrapper which itself is configurable with [`$WAKATIME_HOME/.wakatime.cfg`](https://github.com/wakatime/wakatime-cli/blob/develop/USAGE.md#ini-config-file).
+# Configuration
 
-Required configuration is to set your [WakaTime api key](https://wakatime.com/settings/api-key) in `$WAKATIME_HOME/.wakatime.cfg`, like so:
+Currently `wakatime-ls` is not configurable cause it's more of a simple `wakatime-cli` wrapper which itself is configurable with `$WAKATIME_HOME/.wakatime.cfg` ([see docs](https://github.com/wakatime/wakatime-cli/blob/develop/USAGE.md#ini-config-file)). (`$WAKATIME_HOME` defaults to `$HOME`)
+
+It might be already filled if you've used another WakaTime plugin in the past.
+
+Required configuration is to set your [WakaTime api key] in `$WAKATIME_HOME/.wakatime.cfg`, like so:
+
+[WakaTime api key]: https://wakatime.com/settings/api-key
 
 ```ini
 [settings]
 api_key=waka_xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
 ```
 
-It might be already filled if you've used another wakatime plugin in the past.
+# Usage
 
-## Usage
+## Helix
 
-### Helix
+You *need* to add `wakatime-ls` to your `languages.toml` configuration ([see docs](https://docs.helix-editor.com/languages.html)). Though, it's not currently possible to add global language servers, you can add `wakatime` for your most significant languages.
 
-You can add `wakatime-ls` to your `languages.toml` configuration. Though, it's currently possible to add global language servers, you can add `wakatime` for significant languages. Adding global language servers is blocking on [Helix's new config system](https://github.com/helix-editor/helix/pull/9318).
+Helix does not merge values, you also need to specify the original language servers defined for the language. You can find them in the default [`languages.toml`](https://github.com/helix-editor/helix/blob/master/languages.toml)
+
+
+Adding global language servers is blocking on [Helix's new config system](https://github.com/helix-editor/helix/pull/9318).
 
 e.g.
 
@@ -112,6 +121,8 @@ language-servers = ["rust-analyzer", "wakatime"]
 [[language]]
 name = "nix"
 language-servers = ["nil", "wakatime"]
+
+# add as many entries as the number of the languages you use
 ```
 
 ---
