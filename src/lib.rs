@@ -9,12 +9,12 @@
 // TODO: do not log when out of dev folder
 
 use serde_json::Value;
-use std::io::BufRead;
+use std::{io::BufRead, str::FromStr};
 use tokio::{process::Command, sync::RwLock};
-use tower_lsp::{
+use tower_lsp_server::{
+	Client, LanguageServer,
 	jsonrpc::{Error, Result},
 	lsp_types::*,
-	Client, LanguageServer,
 };
 
 /// Open the Wakatime web dashboard in a browser
@@ -46,13 +46,13 @@ impl Backend {
 	}
 
 	#[tracing::instrument(skip_all)]
-	async fn on_change(&self, uri: Url, is_write: bool) {
+	async fn on_change(&self, uri: Uri, is_write: bool) {
 		let mut cmd = Command::new("wakatime-cli");
 
 		let user_agent = self.user_agent.read().await;
 		cmd.args(["--plugin", &user_agent]);
 
-		cmd.args(["--entity", uri.path()]);
+		cmd.args(["--entity", uri.path().as_str()]);
 
 		// cmd.args(["--lineno", ""]);
 		// cmd.args(["--cursorno", ""]);
@@ -77,11 +77,10 @@ impl Backend {
 				);
 			}
 			_ => {}
-		};
+		}
 	}
 }
 
-#[tower_lsp::async_trait]
 impl LanguageServer for Backend {
 	#[tracing::instrument(skip_all)]
 	async fn initialize(&self, params: InitializeParams) -> Result<InitializeResult> {
@@ -105,7 +104,7 @@ impl LanguageServer for Backend {
 				info.name,
 				env!("CARGO_PKG_VERSION"),
 			);
-		};
+		}
 
 		Ok(InitializeResult {
 			server_info: Some(ServerInfo {
@@ -155,8 +154,7 @@ impl LanguageServer for Backend {
 			OPEN_DASHBOARD_ACTION => {
 				self.client
 					.show_document(ShowDocumentParams {
-						uri: "https://wakatime.com/dashboard"
-							.try_into()
+						uri: Uri::from_str("https://wakatime.com/dashboard")
 							.expect("the url is valid"),
 						external: Some(true),
 						take_focus: None,
@@ -186,7 +184,7 @@ impl LanguageServer for Backend {
 				tracing::error!(message);
 				self.client.log_message(MessageType::ERROR, &message).await;
 			}
-		};
+		}
 
 		Ok(None)
 	}

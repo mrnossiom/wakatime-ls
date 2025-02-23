@@ -1,8 +1,8 @@
 //! Wakatime LS
 
 use std::panic::{self, PanicHookInfo};
-use tower_lsp::{LspService, Server};
-use tracing_subscriber::{fmt::format::FmtSpan, EnvFilter};
+use tower_lsp_server::{LspService, Server};
+use tracing_subscriber::{EnvFilter, fmt::format::FmtSpan};
 use wakatime_ls::Backend;
 
 /// Transfers panic messages to the tracing logging pipeline
