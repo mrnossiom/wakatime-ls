@@ -105,13 +105,12 @@ impl LanguageServer {
 	}
 
 	fn handle_request(&self, req: Request) -> Result<(), Box<dyn std::error::Error>> {
-		let req = match cast_r::<request::ExecuteCommand>(req) {
+		let req = match try_cast_r::<request::ExecuteCommand>(req)? {
 			Ok((id, params)) => {
 				self.execute_command(id, &params)?;
 				return Ok(());
 			}
-			Err(err @ ExtractError::JsonError { .. }) => panic!("{err:?}"),
-			Err(ExtractError::MethodMismatch(req)) => req,
+			Err(req) => req,
 		};
 
 		let _ = req;
@@ -123,43 +122,36 @@ impl LanguageServer {
 		&self,
 		notification: Notification,
 	) -> Result<(), Box<dyn std::error::Error>> {
-		let notification = match cast_n::<notification::DidOpenTextDocument>(notification) {
-			Ok((_id, params)) => {
+		let notification = match try_cast_n::<notification::DidOpenTextDocument>(notification)? {
+			Ok(params) => {
 				self.on_change(&params.text_document.uri, false)?;
 				return Ok(());
 			}
-			Err(err @ ExtractError::JsonError { .. }) => {
-				eprintln!("{err:?}");
-				return Ok(());
-			}
-			Err(ExtractError::MethodMismatch(req)) => req,
+			Err(req) => req,
 		};
 
-		let notification = match cast_n::<notification::DidChangeTextDocument>(notification) {
-			Ok((_id, params)) => {
+		let notification = match try_cast_n::<notification::DidChangeTextDocument>(notification)? {
+			Ok(params) => {
 				self.on_change(&params.text_document.uri, false)?;
 				return Ok(());
 			}
-			Err(err @ ExtractError::JsonError { .. }) => panic!("{err:?}"),
-			Err(ExtractError::MethodMismatch(req)) => req,
+			Err(req) => req,
 		};
 
-		let notification = match cast_n::<notification::DidCloseTextDocument>(notification) {
-			Ok((_id, params)) => {
+		let notification = match try_cast_n::<notification::DidCloseTextDocument>(notification)? {
+			Ok(params) => {
 				self.on_change(&params.text_document.uri, false)?;
 				return Ok(());
 			}
-			Err(err @ ExtractError::JsonError { .. }) => panic!("{err:?}"),
-			Err(ExtractError::MethodMismatch(req)) => req,
+			Err(req) => req,
 		};
 
-		let notification = match cast_n::<notification::DidSaveTextDocument>(notification) {
-			Ok((_id, params)) => {
+		let notification = match try_cast_n::<notification::DidSaveTextDocument>(notification)? {
+			Ok(params) => {
 				self.on_change(&params.text_document.uri, true)?;
 				return Ok(());
 			}
-			Err(err @ ExtractError::JsonError { .. }) => panic!("{err:?}"),
-			Err(ExtractError::MethodMismatch(req)) => req,
+			Err(req) => req,
 		};
 
 		let _ = notification;
@@ -256,18 +248,29 @@ impl LanguageServer {
 	}
 }
 
-fn cast_r<R>(req: Request) -> Result<(RequestId, R::Params), ExtractError<Request>>
+// first result if for json decoding error, second is for method mismatch
+type CastResult<Payload, Type> = Result<Result<Payload, Type>, ExtractError<Type>>;
+
+fn try_cast_r<R>(req: Request) -> CastResult<(RequestId, R::Params), Request>
 where
 	R: lsp_types::request::Request,
 	R::Params: serde::de::DeserializeOwned,
 {
-	req.extract(R::METHOD)
+	match req.extract(R::METHOD) {
+		Ok(params) => Ok(Ok(params)),
+		Err(ExtractError::MethodMismatch(req)) => Ok(Err(req)),
+		Err(err) => Err(err),
+	}
 }
 
-fn cast_n<N>(req: Notification) -> Result<(RequestId, N::Params), ExtractError<Notification>>
+fn try_cast_n<N>(notif: Notification) -> CastResult<N::Params, Notification>
 where
 	N: lsp_types::notification::Notification,
 	N::Params: serde::de::DeserializeOwned,
 {
-	req.extract(N::METHOD)
+	match notif.extract(N::METHOD) {
+		Ok(params) => Ok(Ok(params)),
+		Err(ExtractError::MethodMismatch(notif)) => Ok(Err(notif)),
+		Err(err) => Err(err),
+	}
 }
