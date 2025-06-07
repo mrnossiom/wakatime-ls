@@ -15,6 +15,10 @@ const USAGE: &str = concat!(
 );
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
+	// Easier to see in editor logs if the current developement version is loaded
+	#[cfg(debug_assertions)]
+	eprintln!("DEBUG VERSION");
+
 	let mut args = env::args();
 	let _binary = args.next();
 
