@@ -7,6 +7,7 @@ use std::{
 	process::{self, Command},
 };
 use wakatime_ls::LanguageServer;
+mod utils;
 
 const USAGE: &str = concat!(
 	"usage: ",
@@ -43,7 +44,30 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 						eprintln!("could not execute `wakatime-cli`: {err:?}");
 					}
 				}
-				// TODO: add a health check for api key
+
+				match Command::new("wakatime-cli")
+					.arg("--config-read")
+					.arg("api_key")
+					.output()
+				{
+					Ok(output) => {
+						if utils::is_valid_api_key(
+							String::from_utf8_lossy(output.stdout.trim_ascii()).into_owned(),
+						) {
+							println!("wakatime-cli api-key: \u{2705}");
+						} else {
+							println!(
+								"wakatime-cli api-key: \u{274C} (Please add a valid api-key in wakatime config file)"
+							);
+						}
+					}
+					Err(err) if err.kind() == ErrorKind::NotFound => {
+						println!("wakatime-cli: not found in path (wakatime-ls needs it)");
+					}
+					Err(err) => {
+						eprintln!("could not execute `wakatime-cli`: {err:?}");
+					}
+				}
 			}
 			option => {
 				println!("invalid option `{option}` provided\n{USAGE}");
