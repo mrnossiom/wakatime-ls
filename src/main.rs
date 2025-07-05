@@ -57,7 +57,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 							println!("wakatime-cli api-key: \u{2705}");
 						} else {
 							println!(
-								"wakatime-cli api-key: \u{274C} (Please add api-key in wakatime config file)"
+								"wakatime-cli api-key: \u{274C} (Please add a valid api-key in wakatime config file)"
 							);
 						}
 					}
