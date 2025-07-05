@@ -24,7 +24,6 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 	let _binary = args.next();
 
 	if let Some(arg) = args.next() {
-		println!("{:?}", arg.as_str());
 		match arg.as_str() {
 			"--help" => println!("{USAGE}"),
 			"--version" => println!("{}", env!("CARGO_PKG_VERSION")),
