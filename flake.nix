@@ -13,7 +13,7 @@
     let
       inherit (nixpkgs.lib) genAttrs;
 
-      forAllSystems = genAttrs [ "x86_64-linux" "aarch64-linux" "aarch64-darwin" ];
+      forAllSystems = genAttrs [ "x86_64-linux" "aarch64-linux" "aarch64-darwin" "x86_64-darwin" ];
       forAllPkgs = function: forAllSystems (system: function pkgs.${system});
 
       mkApp = (program: { type = "app"; inherit program; });
