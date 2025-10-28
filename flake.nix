@@ -67,7 +67,7 @@
 
               cargo-dist
 
-              wakatime
+              wakatime-cli
             ];
 
             buildInputs = [ ];
