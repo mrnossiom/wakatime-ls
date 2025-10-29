@@ -184,7 +184,8 @@ impl LanguageServer {
 				assert!(
 					exit.success(),
 					"`wakatime-cli` exited with error code: {}",
-					exit.code().map_or("<none>".into(), |c| c.to_string())
+					exit.code()
+						.map_or_else(|| "<none>".into(), |c| c.to_string())
 				);
 				Ok(())
 			}
