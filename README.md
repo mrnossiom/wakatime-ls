@@ -68,10 +68,9 @@ You may download the compressed tarball corresponding to your OS.
 
 You will also need `wakatime-cli` in your `$PATH` for setups others than Nix, which already bundles it. You can download `wakatime-cli`:
 
-- with your prefered package manager, see [`wakatime` repology] or [`wakatime-cli` repology]
-- or from the [`wakatime-cli` releases page]
+- with your preferred package manager (see [`wakatime-cli` repology])
+- from the [`wakatime-cli` releases page]
 
-[`wakatime` repology]: https://repology.org/project/wakatime/versions
 [`wakatime-cli` repology]: https://repology.org/project/wakatime-cli/versions
 [`wakatime-cli` releases page]: https://github.com/wakatime/wakatime-cli/releases/latest
 

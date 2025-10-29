@@ -3,7 +3,7 @@
 
 , rustPlatform
 , makeWrapper
-, wakatime
+, wakatime-cli
 }:
 
 with lib;
@@ -27,7 +27,7 @@ rustPlatform.buildRustPackage {
 
   postFixup = ''
     wrapProgram $out/bin/wakatime-ls \
-      --suffix PATH : ${makeBinPath [ wakatime ]}
+      --suffix PATH : ${makeBinPath [ wakatime-cli ]}
   '';
 
   meta = {
