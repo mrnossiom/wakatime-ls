@@ -5,16 +5,17 @@ A dead-simple language server around <code>wakatime-cli</code> to send code trac
 </strong></p>
 
 <p align="center">
-  <img alt="Nix Powered" src="https://img.shields.io/badge/Nix-Powered-blue?logo=nixos" />
-  <a href="https://wakatime.com/badge/github/mrnossiom/wakatime-ls">
-    <img alt="Time spent on wakatime-ls" src="https://wakatime.com/badge/github/mrnossiom/wakatime-ls.svg" />
+  <a href="https://nixos.org/">
+    <img alt="Nix Powered" src="https://img.shields.io/badge/Nix-Powered-blue?logo=nixos" />
   </a>
-  <a href="https://discord.gg/GrbpRNza5j">
-    <img alt="Join support Discord" src="https://img.shields.io/badge/Support-Join-3178C6?style=social&logo=Discord" />
+  <a href="https://matrix.to/#/#wakatime-ls:wiro.world">
+    <img alt="Matrix room at #wakatime-ls:wiro.world" src="https://img.shields.io/badge/Matrix-%23wakatime--ls%3Awiro.world-white?logo=matrix">
   </a>
 </p>
 
 I made this language server wrapper implementation around `wakatime-cli` because I wanted support for WakaTime in [Helix](https://github.com/helix-editor/helix). That said, it's should be compatible with every LSP implementation.
+
+`wakatime-ls` listens to open, change, save and close file events. It then reflects this activity by sending heartbeats via the `wakatime-cli`.
 
 # Installation
 
@@ -24,10 +25,11 @@ I made this language server wrapper implementation around `wakatime-cli` because
 Install from repository with cargo:
 
 ```sh
+# from crates.io
+cargo install wakatime-ls
+# or from source
 cargo install --git https://github.com/mrnossiom/wakatime-ls
 ```
-
-I don't plan on publishing pre-v1 versions on `crates.io`.
 
 </details>
 
@@ -123,10 +125,10 @@ language-servers = ["nil", "wakatime"]
 
 ## And more...
 
-`wakatime-ls` is an LSP so it is easy to quickly integrate into any editor.
+`wakatime-ls` is a language server, it's easy to quickly integrate into any editor that support the language server protocol.
 
 Feel free to make a PR for your own favorite editor.
 
----
+# License
 
-Work is licensed under [`CECILL-2.1`](https://choosealicense.com/licenses/cecill-2.1/), a French OSS license that allows modification and distribution of the software while requiring the same license for derived works.
+Work is licensed under [CECILL-2.1](https://choosealicense.com/licenses/cecill-2.1/), a French OSS license that allows modification and distribution of the software while requiring the same license for derived works.
