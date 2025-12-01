@@ -1,6 +1,6 @@
 {
   inputs = {
-    nixpkgs.url = "github:NixOS/nixpkgs/nixos-25.05";
+    nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
 
     rust-overlay.url = "github:oxalica/rust-overlay";
     rust-overlay.inputs.nixpkgs.follows = "nixpkgs";
@@ -11,14 +11,14 @@
 
   outputs = { self, nixpkgs, rust-overlay, gitignore }:
     let
-      inherit (nixpkgs.lib) genAttrs;
+      inherit (nixpkgs.lib) genAttrs getExe;
 
       forAllSystems = genAttrs [ "x86_64-linux" "aarch64-linux" "aarch64-darwin" "x86_64-darwin" ];
-      forAllPkgs = function: forAllSystems (system: function pkgs.${system});
+      forAllPkgs = function: forAllSystems (system: function allPkgs.${system});
 
       mkApp = (program: { type = "app"; inherit program; });
 
-      pkgs = forAllSystems (system: (import nixpkgs {
+      allPkgs = forAllSystems (system: (import nixpkgs {
         inherit system;
         overlays = [ (import rust-overlay) ];
       }));
@@ -32,7 +32,7 @@
       });
       apps = forAllSystems (system: rec {
         default = wakatime-ls;
-        wakatime-ls = mkApp (pkgs.getExe self.packages.${system}.app);
+        wakatime-ls = mkApp (getExe self.packages.${system}.wakatime-ls);
       });
 
       devShells = forAllPkgs (pkgs:
