@@ -8,6 +8,9 @@ A dead-simple language server around <code>wakatime-cli</code> to send code trac
   <a href="https://nixos.org/">
     <img alt="Nix Powered" src="https://img.shields.io/badge/Nix-Powered-blue?logo=nixos" />
   </a>
+  <a href="https://crates.io/crates/wakatime-ls">
+    <img alt="wakatime-ls crates.io version" src="https://img.shields.io/crates/v/wakatime-ls">
+  </a>
   <a href="https://matrix.to/#/#wakatime-ls:wiro.world">
     <img alt="Matrix room at #wakatime-ls:wiro.world" src="https://img.shields.io/badge/Matrix-%23wakatime--ls%3Awiro.world-white?logo=matrix">
   </a>
