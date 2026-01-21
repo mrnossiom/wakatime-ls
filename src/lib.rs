@@ -4,12 +4,12 @@
 
 // TODO: check options for additional ideas <https://github.com/wakatime/wakatime-cli/blob/develop/USAGE.md#ini-config-file>
 
-// TODO: implement debounding ourselves to avoid wkcli roundtrips
+// TODO: implement debouncing ourselves to avoid wkcli roundtrips
 // TODO: read wakatime config
 // TODO: do not log when out of dev folder
 
+use ls_types::{notification::Notification as _, request::Request as _, *};
 use lsp_server::{Connection, ExtractError, Message, Notification, Request, RequestId};
-use lsp_types::{notification::Notification as _, request::Request as _, *};
 
 /// Open the Wakatime web dashboard in a browser
 const OPEN_DASHBOARD_ACTION: &str = "open_dashboard";
@@ -62,7 +62,7 @@ impl LanguageServer {
 				info.name,
 				info.version
 					.as_ref()
-					.map_or_else(|| "unknown", |version| version),
+					.map_or_else(|| "unknown", |version| version.as_str()),
 				// Plugin part
 				self.user_agent,
 				// Last part is the one parsed by `wakatime` servers
@@ -254,7 +254,7 @@ type CastResult<Payload, Type> = Result<Result<Payload, Type>, ExtractError<Type
 
 fn try_cast_r<R>(req: Request) -> CastResult<(RequestId, R::Params), Request>
 where
-	R: lsp_types::request::Request,
+	R: ls_types::request::Request,
 	R::Params: serde::de::DeserializeOwned,
 {
 	match req.extract(R::METHOD) {
@@ -266,7 +266,7 @@ where
 
 fn try_cast_n<N>(notif: Notification) -> CastResult<N::Params, Notification>
 where
-	N: lsp_types::notification::Notification,
+	N: ls_types::notification::Notification,
 	N::Params: serde::de::DeserializeOwned,
 {
 	match notif.extract(N::METHOD) {

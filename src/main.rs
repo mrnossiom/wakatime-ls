@@ -15,7 +15,7 @@ const USAGE: &str = concat!(
 );
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
-	// Easier to see in editor logs if the current developement version is loaded
+	// Easier to see in editor logs if the current development version is loaded
 	#[cfg(debug_assertions)]
 	eprintln!("DEBUG VERSION");
 

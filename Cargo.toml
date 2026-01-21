@@ -12,7 +12,7 @@ license = "CECILL-2.1"
 
 [dependencies]
 lsp-server = "0.7"
-lsp-types = "0.97"
+ls-types = "0.0"
 serde = "1"
 serde_json = "1"
 
