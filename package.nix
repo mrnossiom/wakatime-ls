@@ -1,14 +1,14 @@
-{ lib
-, gitignore
+{
+  lib,
+  gitignore,
 
-, rustPlatform
-, makeWrapper
-, wakatime-cli
+  rustPlatform,
+  makeWrapper,
+  wakatime-cli,
 }:
 
-with lib;
-
 let
+  inherit (lib) makeBinPath;
   inherit (gitignore.lib) gitignoreSource;
 
   src = gitignoreSource ./.;
@@ -20,9 +20,13 @@ rustPlatform.buildRustPackage {
 
   inherit src;
 
-  cargoLock = { lockFile = "${src}/Cargo.lock"; };
+  cargoLock = {
+    lockFile = "${src}/Cargo.lock";
+  };
 
-  nativeBuildInputs = [ makeWrapper ];
+  nativeBuildInputs = [
+    makeWrapper
+  ];
   buildInputs = [ ];
 
   postFixup = ''
