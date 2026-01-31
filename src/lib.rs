@@ -178,18 +178,28 @@ impl LanguageServer {
 			cmd.arg("--write");
 		}
 
-		match cmd.status() {
-			Err(err) => Err(err.into()),
-			Ok(exit) => {
-				assert!(
-					exit.success(),
-					"`wakatime-cli` exited with error code: {}",
-					exit.code()
-						.map_or_else(|| "<none>".into(), |c| c.to_string())
-				);
-				Ok(())
-			}
+		let status = cmd.status()?;
+
+		// error codes are available at
+		// https://github.com/wakatime/wakatime-cli/blob/develop/pkg/exitcode/exitcode.go
+
+		if !status.success() {
+			let notification = Message::Notification(Notification::new(
+				notification::LogMessage::METHOD.into(),
+				LogMessageParams {
+					typ: MessageType::WARNING,
+					message: format!(
+						"`wakatime-cli` exited with error code: {}. Check your configuration.",
+						status
+							.code()
+							.map_or_else(|| "<none>".into(), |c| c.to_string())
+					),
+				},
+			));
+			self.connection.sender.send(notification)?;
 		}
+
+		Ok(())
 	}
 
 	fn execute_command(
