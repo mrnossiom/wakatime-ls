@@ -57,28 +57,8 @@
       devShells = forAllPkgs (
         pkgs:
         let
-          inherit (pkgs) fetchFromGitHub;
-
           file-rust-toolchain = pkgs.rust-bin.fromRustupToolchainFile ./rust-toolchain.toml;
           rust-toolchain = file-rust-toolchain.override { extensions = [ "rust-analyzer" ]; };
-
-          cargo-dist = pkgs.cargo-dist.overrideAttrs (
-            final-attrs: old-attrs: {
-              version = "0.28.5";
-              src = fetchFromGitHub {
-                owner = "astral-sh";
-                repo = "cargo-dist";
-                rev = "v${final-attrs.version}";
-                hash = "sha256-SUMonuiX1xh1Fz77hf+v1I9nDIl9Am5B7Upv2zPcVJg=";
-              };
-
-              cargoHash = "sha256-cc/gCm9f86byXGVztMIbwoP2a8bmXk1r7ODhWFGa6IE=";
-              cargoDeps = pkgs.rustPlatform.fetchCargoVendor {
-                inherit (final-attrs) pname src version;
-                hash = final-attrs.cargoHash;
-              };
-            }
-          );
         in
         {
           default = pkgs.mkShell {

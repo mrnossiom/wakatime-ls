@@ -1,12 +1,14 @@
 name: Rust
-on: [push, pull_request]
+on:
+  - push
+  - pull_request
 
 jobs:
   check:
     name: Check and test Rust code
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
       - uses: dtolnay/rust-toolchain@stable
         with:
           components: rustfmt, clippy
