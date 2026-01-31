@@ -8,7 +8,9 @@
 // TODO: read wakatime config
 // TODO: do not log when out of dev folder
 
-use ls_types::{notification::Notification as _, request::Request as _, *};
+#![expect(clippy::wildcard_imports, reason = "ls_types has no prelude")]
+use ls_types::*;
+use ls_types::{notification::Notification as _, request::Request as _};
 use lsp_server::{Connection, ExtractError, Message, Notification, Request, RequestId};
 
 /// Open the Wakatime web dashboard in a browser
