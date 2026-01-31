@@ -13,10 +13,11 @@ use ls_types::*;
 use ls_types::{notification::Notification as _, request::Request as _};
 use lsp_server::{Connection, ExtractError, Message, Notification, Request, RequestId};
 
+// TODO: support independent backends
 /// Open the Wakatime web dashboard in a browser
-const OPEN_DASHBOARD_ACTION: &str = "open_dashboard";
+const OPEN_DASHBOARD_ACTION: &str = "Open wakatime.com dashboard";
 /// Log the time past today in an editor
-const SHOW_TIME_PAST_ACTION: &str = "show_time_past";
+const SHOW_TIME_PAST_ACTION: &str = "Show time logged today";
 
 /// Base plugin user agent
 const PLUGIN_USER_AGENT: &str = concat!(env!("CARGO_PKG_NAME"), "/", env!("CARGO_PKG_VERSION"));
@@ -98,7 +99,7 @@ impl LanguageServer {
 				}
 
 				Message::Response(response) => {
-					eprintln!("{:?}", response.result);
+					eprintln!("{response:?}");
 				}
 			}
 		}
@@ -187,8 +188,8 @@ impl LanguageServer {
 
 		if !status.success() {
 			let notification = Message::Notification(Notification::new(
-				notification::LogMessage::METHOD.into(),
-				LogMessageParams {
+				notification::ShowMessage::METHOD.into(),
+				ShowMessageParams {
 					typ: MessageType::WARNING,
 					message: format!(
 						"`wakatime-cli` exited with error code: {}. Check your configuration.",
@@ -222,7 +223,7 @@ impl LanguageServer {
 
 				let req = Message::Request(Request::new(
 					id,
-					request::ShowMessageRequest::METHOD.into(),
+					request::ShowDocument::METHOD.into(),
 					show_documents_params,
 				));
 				self.connection.sender.send(req)?;
@@ -235,8 +236,8 @@ impl LanguageServer {
 				let time_past = String::from_utf8_lossy(&output.stdout);
 
 				let notification = Message::Notification(Notification::new(
-					notification::LogMessage::METHOD.into(),
-					LogMessageParams {
+					notification::ShowMessage::METHOD.into(),
+					ShowMessageParams {
 						typ: MessageType::INFO,
 						message: time_past.to_string(),
 					},
@@ -247,8 +248,8 @@ impl LanguageServer {
 				let message = format!("Unknown workspace command received: `{unknown_cmd_id}`");
 
 				let notification = Message::Notification(Notification::new(
-					notification::LogMessage::METHOD.into(),
-					LogMessageParams {
+					notification::ShowMessage::METHOD.into(),
+					ShowMessageParams {
 						typ: MessageType::ERROR,
 						message,
 					},
