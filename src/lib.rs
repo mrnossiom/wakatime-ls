@@ -182,20 +182,15 @@ impl LanguageServer {
 		}
 
 		let status = cmd.status()?;
+		let error_code = CliErrorCode::from(status.code().unwrap_or(0));
 
-		// error codes are available at
-		// https://github.com/wakatime/wakatime-cli/blob/develop/pkg/exitcode/exitcode.go
-
-		if !status.success() {
+		if error_code.is_err() {
 			let notification = Message::Notification(Notification::new(
 				notification::ShowMessage::METHOD.into(),
 				ShowMessageParams {
 					typ: MessageType::WARNING,
 					message: format!(
-						"`wakatime-cli` exited with error code: {}. Check your configuration.",
-						status
-							.code()
-							.map_or_else(|| "<none>".into(), |c| c.to_string())
+						"`wakatime-cli` exited with error code: {error_code}. Check your configuration.",
 					),
 				},
 			));
@@ -286,5 +281,58 @@ where
 		Ok(params) => Ok(Ok(params)),
 		Err(ExtractError::MethodMismatch(notif)) => Ok(Err(notif)),
 		Err(err) => Err(err),
+	}
+}
+
+// error codes are available at
+// https://github.com/wakatime/wakatime-cli/blob/develop/pkg/exitcode/exitcode.go
+#[derive(Debug)]
+enum CliErrorCode {
+	Success,
+	Generic,
+	Api,
+	Auth,
+	ConfigFileParse,
+	ConfigFileRead,
+	ConfigFileWrite,
+	Backoff,
+	Unknown(i32),
+}
+
+impl CliErrorCode {
+	const fn is_err(&self) -> bool {
+		!matches!(self, Self::Success | Self::Backoff)
+	}
+}
+
+impl From<i32> for CliErrorCode {
+	fn from(value: i32) -> Self {
+		match value {
+			0 => Self::Success,
+			1 => Self::Generic,
+			102 => Self::Api,
+			104 => Self::Auth,
+			103 => Self::ConfigFileParse,
+			110 => Self::ConfigFileRead,
+			111 => Self::ConfigFileWrite,
+			112 => Self::Backoff,
+			_ => Self::Unknown(value),
+		}
+	}
+}
+
+impl std::fmt::Display for CliErrorCode {
+	fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+		match self {
+			Self::Success => write!(f, "Heartbeat sent successfully"),
+			Self::Generic => write!(f, "a generic error happened"),
+			Self::Api => write!(f, "api returned an error"),
+			Self::Auth => write!(f, "invalid api key"),
+			Self::ConfigFileParse => write!(f, "config file could not be parsed"),
+			Self::ConfigFileRead => write!(f, "config read command"),
+			Self::ConfigFileWrite => write!(f, "config write command"),
+			Self::Backoff => write!(f, "sending heartbeats postponed because of rate limit"),
+			Self::Unknown(code) => write!(f, "unknown error code {code}"),
+		}
 	}
 }
